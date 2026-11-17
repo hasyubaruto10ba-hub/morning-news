@@ -257,3 +257,32 @@ def render(job, save, talk, errors, now):
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>朝ニュース</title>
+<style>
+body{{font-family:sans-serif;max-width:640px;margin:0 auto;padding:16px;line-height:1.6}}
+h1{{font-size:1.3rem}} h2{{font-size:1.1rem;margin-top:1.6rem;border-left:4px solid #3b82f6;padding-left:8px}}
+.card{{padding:10px 0;border-bottom:1px solid #ddd}}
+.card a{{color:#111;text-decoration:none;font-weight:bold}}
+.sum{{font-size:.85rem;color:#333;margin-top:2px}}
+.meta{{font-size:.75rem;color:#666;margin-top:2px}} .none{{color:#999}}
+.hint{{font-size:.8rem;color:#2563eb}}
+.err{{font-size:.75rem;color:#b45309;margin-top:2rem}}
+</style></head><body>
+<h1>朝ニュース</h1>
+<p class="meta">更新: {now.strftime('%Y-%m-%d %H:%M')} JST</p>
+{body}
+{err}
+{SCRIPT}
+</body></html>"""
+
+
+if __name__ == "__main__":
+    now = datetime.now(JST)
+    errors, seen = [], set()
+    biz = fetch(BIZ_FEEDS, now, BIZ_MAX_AGE, seen, errors)
+    talk_src = fetch(TALK_FEEDS, now, TALK_MAX_AGE, seen, errors)
+    job = pick_job(biz)
+    save = pick_save(biz, {j["link"] for j in job})
+    talk = pick_talk(talk_src)
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(render(job, save, talk, errors, now))
+    print(f"就活{len(job)}件 / 就活{len(save)}件")
